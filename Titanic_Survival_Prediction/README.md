@@ -1,0 +1,2 @@
+# Titanic Survival Prediction
+This project aims to predict the survival of passengers on the Titanic using machine learning techniques. The dataset used for this project is the Titanic dataset, which contains information about the passengers, such as their age, gender, class, and other relevant features. The goal is to build a predictive model that can accurately classify whether a passenger survived or not based on these features.

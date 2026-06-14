@@ -9,12 +9,12 @@ Below is the summary table demonstrating the performance across key classificati
 | Model | Accuracy | Precision | Recall | F1 Score |
 | :--- | :---: | :---: | :---: | :---: |
 | **Logistic Regression** | **0.8492** | **0.8182** | **0.7826** | **0.8000** |
-| **Gradient Boosting** | 0.8156 | 0.7903 | 0.7101 | 0.7481 |
-| **SVM (Support Vector Machine)** | 0.7989 | 0.7797 | 0.6667 | 0.7188 |
+| **SVM** | 0.7989 | 0.7797 | 0.6667 | 0.7188 |
 | **Random Forest** | 0.7989 | 0.7619 | 0.6957 | 0.7273 |
-| **KNN (K-Nearest Neighbors)** | 0.7989 | 0.7705 | 0.6812 | 0.7231 |
+| **Gradient Boosting** | 0.8156 | 0.7903 | 0.7101 | 0.7481 |
 | **Decision Tree** | 0.7821 | 0.7500 | 0.6522 | 0.6977 |
 | **Naive Bayes** | 0.7263 | 0.7941 | 0.3913 | 0.5243 |
+| **KNN** | 0.7989 | 0.7705 | 0.6812 | 0.7231 |
 
 ---
 

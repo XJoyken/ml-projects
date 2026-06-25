@@ -4,6 +4,37 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, Float, DateTime, VARCHAR, CHAR
 from sqlalchemy.orm import declarative_base, sessionmaker
+from dotenv import load_dotenv
+from contextlib import asynccontextmanager
+import mlflow.pyfunc
+import pandas as pd
+
+load_dotenv()
+
+titanic_pipeline = None
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global titanic_pipeline
+    mlflow.set_tracking_uri(os.getenv('MLFLOW_TRACKING_URI', 'http://localhost:5000'))
+    model_uri = "models:/Titanic_Survival_Prediction/latest"
+
+    try:
+        print(f"Loading model from MLflow Registry {model_uri}.")
+        titanic_pipeline = mlflow.pyfunc.load_model(model_uri=model_uri)
+        print("Model loaded.")
+    except Exception as e:
+        print(f"Error: {e}")
+        raise
+    
+    yield
+    print('Closing...')
+
+    if titanic_pipeline is not None:
+        del titanic_pipeline
+        print("Model deleted out of memory")
+    print("Closed.")
+
 
 DB_NAME = os.getenv('POSTGRES_DB')
 DB_USER = os.getenv('POSTGRES_USER')
@@ -35,7 +66,7 @@ class PredictionLog(Base):
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Titanic Survival Prediction")
+app = FastAPI(title="Titanic Survival Prediction", lifespan=lifespan)
 
 class PredictRequest(BaseModel):
     pclass: int
@@ -49,5 +80,33 @@ class PredictRequest(BaseModel):
     family_size: float
 
 @app.post("/predict")
-def predict(payload: PredictRequest):
-    None
+async def predict(payload: PredictRequest):
+    if titanic_pipeline is None:
+        raise HTTPException(status_code=503, detail="Model is unavailable")
+    try:
+        df = pd.DataFrame([payload.model_dump()])
+        prediction = titanic_pipeline.predict(df)
+        db = SessionLocal()
+        log_entry = PredictionLog(
+            pclass=payload.pclass,
+            sex=payload.sex,
+            age=payload.age,
+            fare=payload.fare,
+            cabin=payload.cabin,
+            embarked=payload.embarked,
+            title=payload.title,
+            group_size=payload.group_size,
+            family_size=payload.family_size
+        )
+        db.add(log_entry)
+        db.commit()
+        db.refresh(log_entry)
+        db.close()
+            
+        return {
+            "status": "success",
+            "prediction": prediction,
+            "log_id": log_entry.id
+        }
+    except Exception as e:
+        return HTTPException(status_code=400, detail=f'Error: {e}')

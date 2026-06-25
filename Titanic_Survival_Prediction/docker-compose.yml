@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: titanic_backend
+    ports:
+      - "${API_PORT}:8000"
+    depends_on:
+      - db
+      - mlflow
+    environment:
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: always
+
+  mlflow:
+    container_name: titanic_mlflow
+    image: python:3.10-slim
+    ports:
+      - "${MLFLOW_PORT}:5000"
+    environment:
+      - MLFLOW_DB=${MLFLOW_DB}
+    command: >
+      sh -c "pip install mlflow psycopg2-binary &&
+             mlflow server \
+             --bakend-store-uri postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${DB_HOST}:${DB_PORT}/${MLFLOW_DB} \
+             --default-artifact-root /data/mlruns \
+             --host 0.0.0.0 \
+             --port 5000"
+    depends_on:
+      - db
+    volumes:
+      - ./mlruns:/data/mlruns
+      - ./mlflow.db:/data/mlflow.db
+    restart: always
+
+  db:
+    container_name: titanic_postgres
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - titanic_db:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    restart: always
+
+volumes:
+  titanic_db:

@@ -85,7 +85,7 @@ async def predict(payload: PredictRequest):
         raise HTTPException(status_code=503, detail="Model is unavailable")
     try:
         df = pd.DataFrame([payload.model_dump()])
-        prediction = titanic_pipeline.predict(df)
+        prediction = int(titanic_pipeline.predict(df)[0])
         db = SessionLocal()
         log_entry = PredictionLog(
             pclass=payload.pclass,
@@ -96,7 +96,8 @@ async def predict(payload: PredictRequest):
             embarked=payload.embarked,
             title=payload.title,
             group_size=payload.group_size,
-            family_size=payload.family_size
+            family_size=payload.family_size,
+            prediction=prediction
         )
         db.add(log_entry)
         db.commit()

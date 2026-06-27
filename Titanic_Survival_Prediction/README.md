@@ -21,3 +21,25 @@ Below is the summary table demonstrating the performance across key classificati
 ### Key Insights & Observations
 
 Logistic Regression showed the best result on all metrics, beating more complex models in predictive accuracy. This was helped by the fact that the dataset consists of only 891 data, and it also shows strong linear relationships between `Sex`/`Title`, and survival rates.
+
+# How to Run the Code
+1. Clone the repository to your local machine.
+2. Create an `.env` file in the root directory and fill by copying the content of `.env.example` file.
+3. Open the terminal and navigate to the project directory.
+4. Run this command: 
+```bash
+   docker compose up -d
+```
+5. Done!
+
+## Applications
+- Backend (FastAPI Swagger): http://localhost:8000/docs
+- MLflow UI: http://localhost:5000
+- PostgreSQL: 
+```bash
+docker exec -it titanic_postgres psql -U {POSTGRES_USER} -d {POSTGRES_DB}
+```
+Find out all databases:
+```sql
+\dt
+```

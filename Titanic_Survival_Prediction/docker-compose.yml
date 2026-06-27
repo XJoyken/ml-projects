@@ -11,6 +11,8 @@ services:
         condition: service_healthy
       mlflow:
         condition: service_healthy
+      trainer:
+        condition: service_completed_successfully
     environment:
       - PYTHONUNBUFFERED=1
       - DB_NAME=${POSTGRES_DB}
@@ -24,6 +26,32 @@ services:
     volumes:
       - .:/app
     restart: always
+
+  trainer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: titanic_trainer
+    depends_on:
+      db:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: ["python", "train.py"]
+    restart: "no"
+
 
   mlflow:
     container_name: titanic_mlflow

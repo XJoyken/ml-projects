@@ -85,6 +85,17 @@ async def predict(payload: PredictRequest):
         raise HTTPException(status_code=503, detail="Model is unavailable")
     try:
         df = pd.DataFrame([payload.model_dump()])
+        df.rename(columns={
+            'pclass': 'Pclass',
+            'sex': 'Sex',
+            'age': 'Age',
+            'fare': 'Fare',
+            'cabin': 'Cabin',
+            'embarked': 'Embarked',
+            'title': 'Title',
+            'group_size': 'GroupSize',
+            'family_size': 'FamilySize'
+        }, inplace=True)
         prediction = int(titanic_pipeline.predict(df)[0])
         db = SessionLocal()
         log_entry = PredictionLog(

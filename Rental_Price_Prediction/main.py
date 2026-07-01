@@ -4,7 +4,8 @@ import os
 import datetime
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from sqlalchemy import create_engine, Column
+from sqlalchemy import create_engine, Column, Integer
+from sqlalchemy.orm import sessionmaker, declarative_base
 import mlflow.pyfunc
 import pandas as pd
 from train import REG_NAME
@@ -42,3 +43,13 @@ DB_HOST = os.getenv('DB_HOST')
 DB_PORT = os.getenv('DB_PORT')
 
 DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+class PredictionLog(Base):
+    __tablename_ = 'prediction_history'
+
+    id = Column(Integer, primary_key=True, index=True)
+    

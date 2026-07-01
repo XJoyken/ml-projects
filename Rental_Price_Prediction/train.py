@@ -58,11 +58,11 @@ with mlflow.start_run() as run:
     }
 
     mlflow.log_metrics(metrics=metrics)
-    reg_name = "Rental Price AirBnb Prediction"
+    REG_NAME = "Rental_Price_AirBnb_Prediction"
     mlflow.sklearn.log_model(
         pipeline,
         name="rental_airbnb_pipeline",
-        registered_model_name=reg_name
+        registered_model_name=REG_NAME
     )
     print(f"Run ID: {run.info.run_id}")
-    print(f"Model registry name: {reg_name}")
+    print(f"Model registry name: {REG_NAME}")
